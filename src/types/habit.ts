@@ -1,11 +1,17 @@
 
-export type GoalType = 'completion' | 'quantity' | 'duration' | 'check-in'
+export enum GoalType {
+    Comlpletion = 'completion', 
+    Quantity = 'quantity', 
+    Duration = 'duration', 
+    CheckIn = 'check-in',
+}
 
 export type Scheduletype = 'daily' | 'weekly' | 'custom'
 
 export type Unit = 'minutes' | 'reps' | 'glasses' | null
 
 export type Frequency = {
+    scheduleType: Scheduletype
     daysOfWeek?: number[]  // 0 (Sun) to 6 (Sat)
     interval?: number      // e.g., every 2 days
     timesPerWeek?: number  // goal e.g., 3x/week
