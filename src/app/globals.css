@@ -6,7 +6,9 @@
 @theme {
   /* 🎨 Core Brand Colors */
   --color-canvas: #F7F3E8;          /* main background */
+  --color-light: #F7F3E8;             /*text-light */
   --color-woodland: #2E3C2F;        /* text-primary */
+  --color-dark: #2E3C2F;             /*text-dark */
   --color-clay: #C46D5E;            /* text-accent */
   --color-moss: #6DA87B;            /* success */
   --color-wheat: #F4C96A;           /* warning */
@@ -37,7 +39,9 @@
   --font-garamond-serif: Cormorant Garamond, Georgia, serif;
 
   /* 🖋️ Typography Defaults */
-  --color-text-primary: var(--color-woodland);
+  --color-background: var(--color-canvas);
+  --color-primary: var(--color-woodland);
+  /* text-dark and text-light dont work like these */
   --color-accent: var(--color-clay);
   --color-success: var(--color-moss);
   --color-warning: var(--color-wheat);
@@ -45,20 +49,24 @@
   
 }
 
-/* 📐 Root Setup */
-:root {
+/* 📐 Root Setup  */
+/* :root {
   background-color: var(--color-canvas);
   color: var(--color-text-primary);
   font-family: var(--font-geist-sans);
+} */
+
+.theme-dark {
+  --color-background: var(--color-woodland);
+  --color-primary: var(--color-canvas);
 }
 
-/* 🌓 Optional: Adaptive Dark Theme */
-@media (prefers-color-scheme: dark) {
-  :root {
-    background-color: #0a0a0a;
-    color: #ededed;
-  }
+.theme-light {
+  --color-background: var(--color-canvas);
+  --color-primary: var(--color-woodland);
 }
+
+/*incorporate @theme prefers-dark etc. later if needed*/
 
 /* 🪄 Gradient Utilities – Organized by Category */
 /* You author these manually for full control, but you can still use `bg-hibiscus/80` etc. for opacity. */
