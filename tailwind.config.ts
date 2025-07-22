@@ -12,9 +12,10 @@ import type { Config } from 'tailwindcss';
 const config: Config = {
   content: [
   './src/**/*.{ts,tsx,js,jsx,mdx}',
+  './src/app/**/*.{ts,tsx}',
   './public/index.html'
 ],
-  darkMode: 'class',
+  // darkMode: 'class',
   theme: {
     extend: {
       // 🎨 Core Brand Colors
@@ -29,7 +30,7 @@ const config: Config = {
         sandstone: '#DFD5BA', // Slightly darker sandstone, foreground2
         sepiaGlow: '#CBB89D', //Slightly darker than sandstone, foreground3
         goldenHusk: '#ECD7A4', //Brightesr foreground, forground4
-        
+
         // 🌈 Habit & Chart Gradients
         hibiscus: '#D13E78', // Bright floral pink – vibrant, energetic
         ochre: '#D9A72D', // Sunlit yellow – optimistic and clear

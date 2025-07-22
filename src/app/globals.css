@@ -65,6 +65,12 @@ These are available on the frontend exactly as you write them
 .bg-plum-6 { background-color: #874C78; }
 .bg-plum-7 { background-color: #6D3C62; }
 
+/* FOREGROUNDS */
+.bg-foreground1 { background-color: var(--foreground1); } /* parchmentDeep */
+.bg-foreground2 { background-color: var(--foreground2); } /* sandstone */
+.bg-foreground3 { background-color: var(--foreground3); } /* sepiaGlow */
+.bg-foreground4 { background-color: var(--foreground4); } /* goldenHusk */
+
 /* This is your light theme, and since it's at the top level of :root, 
 it's applied by default. */
 :root {
@@ -92,8 +98,12 @@ You're not defaulting to dark—you're responding to user settings. */
   }
 } */
 
-body {
+/* body {
   background: var(--background);
   color: var(--text-primary);
   font-family: var(--font-sans);
+} */
+
+@theme {
+  --color-moss: #6DA87B;
 }
