@@ -1,17 +1,70 @@
 @import "tailwindcss";
 
-/* 🎨 globals.css
-Purpose: Applies custom base styles and hand-written CSS.
+/* 🧩 Custom Theme via Tailwind 4's @theme block */
+/* This replaces your old tailwind.config.ts */
 
-You're doing: Setting CSS variables (--background, etc.), 
-styling global elements (like body), and adding your 7-level gradient 
-utilities (.bg-hibiscus-3, etc).
+@theme {
+  /* 🎨 Core Brand Colors */
+  --color-canvas: #F7F3E8;          /* main background */
+  --color-woodland: #2E3C2F;        /* text-primary */
+  --color-clay: #C46D5E;            /* text-accent */
+  --color-moss: #6DA87B;            /* success */
+  --color-wheat: #F4C96A;           /* warning */
+  --color-ember: #C84E3C;           /* error */
+  --color-foreground1: #E9DFC8;      /* parchmentDeep */
+  --color-foreground2: #DFD5BA;      /* sandstone */
+  --color-foreground3: #CBB89D;      /* sepiaGlow */
+  --color-foreground4: #ECD7A4;      /* goldenHusk */
 
-These are available on the frontend exactly as you write them
-—so you use className="bg-hibiscus-3" and Tailwind won’t interfere. */
+  /* 🌈 Gradients */
+  --color-hibiscus: #D13E78;
+  --color-ochre: #D9A72D;
+  --color-terracotta: #B54E37;
+  --color-sky: #4D87C2;
+  --color-fern: #4A8C4D;
+  --color-plum: #874C78;
+
+  --color-hibiscus-light: #F2CBD5;
+  --color-ochre-light: #F4E3B4;
+  --color-terracotta-light: #D6A198;
+  --color-sky-light: #C6DDF0;
+  --color-fern-light: #B8D3B1;
+  --color-plum-light: #D8C4D3;
+
+  /* ✍️ Fonts */
+  --font-geist-sans: Geist Sans, Helvetica, Arial, sans-serif;
+  --font-geist-mono: Geist Mono, monospace;
+  --font-garamond-serif: Cormorant Garamond, Georgia, serif;
+
+  /* 🖋️ Typography Defaults */
+  --color-text-primary: var(--color-woodland);
+  --color-accent: var(--color-clay);
+  --color-success: var(--color-moss);
+  --color-warning: var(--color-wheat);
+  --color-error: var(--color-ember);
+  
+}
+
+/* 📐 Root Setup */
+:root {
+  background-color: var(--color-canvas);
+  color: var(--color-text-primary);
+  font-family: var(--font-geist-sans);
+}
+
+/* 🌓 Optional: Adaptive Dark Theme */
+@media (prefers-color-scheme: dark) {
+  :root {
+    background-color: #0a0a0a;
+    color: #ededed;
+  }
+}
+
+/* 🪄 Gradient Utilities – Organized by Category */
+/* You author these manually for full control, but you can still use `bg-hibiscus/80` etc. for opacity. */
 
 
-/* HIBISCUS – floral pink */
+/* HIBISCUS */
 .bg-hibiscus-1 { background-color: #FADBE6; }
 .bg-hibiscus-2 { background-color: #F5C2D7; }
 .bg-hibiscus-3 { background-color: #ED9DC0; }
@@ -20,7 +73,7 @@ These are available on the frontend exactly as you write them
 .bg-hibiscus-6 { background-color: #D13E78; }
 .bg-hibiscus-7 { background-color: #B63066; }
 
-/* OCHRE – golden amber */
+/* OCHRE */
 .bg-ochre-1 { background-color: #FDF1D4; }
 .bg-ochre-2 { background-color: #FAE3AA; }
 .bg-ochre-3 { background-color: #F6D178; }
@@ -29,7 +82,7 @@ These are available on the frontend exactly as you write them
 .bg-ochre-6 { background-color: #D9A72D; }
 .bg-ochre-7 { background-color: #B38819; }
 
-/* TERRACOTTA – earthy clay */
+/* TERRACOTTA */
 .bg-terracotta-1 { background-color: #F3D8D0; }
 .bg-terracotta-2 { background-color: #EAB8A7; }
 .bg-terracotta-3 { background-color: #E09280; }
@@ -38,7 +91,7 @@ These are available on the frontend exactly as you write them
 .bg-terracotta-6 { background-color: #B54E37; }
 .bg-terracotta-7 { background-color: #933E2C; }
 
-/* SKY – fresh blue */
+/* SKY */
 .bg-sky-1 { background-color: #E6F2FA; }
 .bg-sky-2 { background-color: #CCE4F5; }
 .bg-sky-3 { background-color: #A3CDED; }
@@ -47,7 +100,7 @@ These are available on the frontend exactly as you write them
 .bg-sky-6 { background-color: #4D87C2; }
 .bg-sky-7 { background-color: #3A6DA0; }
 
-/* FERN – vibrant foliage */
+/* FERN */
 .bg-fern-1 { background-color: #E1F3DF; }
 .bg-fern-2 { background-color: #C3E8C0; }
 .bg-fern-3 { background-color: #A4DCA1; }
@@ -56,7 +109,7 @@ These are available on the frontend exactly as you write them
 .bg-fern-6 { background-color: #4A8C4D; }
 .bg-fern-7 { background-color: #38693B; }
 
-/* PLUM – reflective purple */
+/* PLUM */
 .bg-plum-1 { background-color: #EED8E9; }
 .bg-plum-2 { background-color: #DABFD9; }
 .bg-plum-3 { background-color: #C5A4C8; }
@@ -65,45 +118,8 @@ These are available on the frontend exactly as you write them
 .bg-plum-6 { background-color: #874C78; }
 .bg-plum-7 { background-color: #6D3C62; }
 
-/* FOREGROUNDS */
-.bg-foreground1 { background-color: var(--foreground1); } /* parchmentDeep */
-.bg-foreground2 { background-color: var(--foreground2); } /* sandstone */
-.bg-foreground3 { background-color: var(--foreground3); } /* sepiaGlow */
-.bg-foreground4 { background-color: var(--foreground4); } /* goldenHusk */
-
-/* This is your light theme, and since it's at the top level of :root, 
-it's applied by default. */
-:root {
-  --background: var(--color-canvas, #F7F3E8);
-  --foreground1: var(--color-foreground1, #E9DFC8);
-  --foreground2: var(--color-foreground2, #DFD5BA);
-  --foreground3: var(--color-foreground3, #CBB89D);
-  --foreground4: var(--color-foreground4, #ECD7A4);
-  --font-sans: var(--font-geist-sans, 'Geist Sans', 'Helvetica', 'Arial', sans-serif);
-  --font-mono: var(--font-geist-mono, 'Geist Mono', monospace);
-  --font-serif: var(--font-garamond-serif, 'Cormorant Garamond', 'Georgia', serif);
-  --text-primary: var(--color-text-primary, #2E3C2F);
-  --text-accent: var(--color-text-accent, #C46D5E);
-  /* use like this later:
-  <div style={{ color: 'var(--text-accent)' }}> */
-}
-
-/* This overrides the colors only if the user's system prefers dark mode. 
-You're not defaulting to dark—you're responding to user settings. */
-/* work on this later */
-/* @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-} */
-
-/* body {
-  background: var(--background);
-  color: var(--text-primary);
-  font-family: var(--font-sans);
-} */
-
-@theme {
-  --color-moss: #6DA87B;
-}
+/* FOREGROUNDS – for your Lattivo layout zones */
+.bg-foreground1 { background-color: var(--color-foreground1); }
+.bg-foreground2 { background-color: var(--color-foreground2); }
+.bg-foreground3 { background-color: var(--color-foreground3); }
+.bg-foreground4 { background-color: var(--color-foreground4); }
