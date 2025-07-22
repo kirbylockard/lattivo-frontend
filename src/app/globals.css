@@ -1,21 +1,99 @@
 @import "tailwindcss";
 
+/* 🎨 globals.css
+Purpose: Applies custom base styles and hand-written CSS.
+
+You're doing: Setting CSS variables (--background, etc.), 
+styling global elements (like body), and adding your 7-level gradient 
+utilities (.bg-hibiscus-3, etc).
+
+These are available on the frontend exactly as you write them
+—so you use className="bg-hibiscus-3" and Tailwind won’t interfere. */
+
+
+/* HIBISCUS – floral pink */
+.bg-hibiscus-1 { background-color: #FADBE6; }
+.bg-hibiscus-2 { background-color: #F5C2D7; }
+.bg-hibiscus-3 { background-color: #ED9DC0; }
+.bg-hibiscus-4 { background-color: #E679AB; }
+.bg-hibiscus-5 { background-color: #DC5894; }
+.bg-hibiscus-6 { background-color: #D13E78; }
+.bg-hibiscus-7 { background-color: #B63066; }
+
+/* OCHRE – golden amber */
+.bg-ochre-1 { background-color: #FDF1D4; }
+.bg-ochre-2 { background-color: #FAE3AA; }
+.bg-ochre-3 { background-color: #F6D178; }
+.bg-ochre-4 { background-color: #F1BF45; }
+.bg-ochre-5 { background-color: #E9AC2C; }
+.bg-ochre-6 { background-color: #D9A72D; }
+.bg-ochre-7 { background-color: #B38819; }
+
+/* TERRACOTTA – earthy clay */
+.bg-terracotta-1 { background-color: #F3D8D0; }
+.bg-terracotta-2 { background-color: #EAB8A7; }
+.bg-terracotta-3 { background-color: #E09280; }
+.bg-terracotta-4 { background-color: #D7745E; }
+.bg-terracotta-5 { background-color: #CE5A43; }
+.bg-terracotta-6 { background-color: #B54E37; }
+.bg-terracotta-7 { background-color: #933E2C; }
+
+/* SKY – fresh blue */
+.bg-sky-1 { background-color: #E6F2FA; }
+.bg-sky-2 { background-color: #CCE4F5; }
+.bg-sky-3 { background-color: #A3CDED; }
+.bg-sky-4 { background-color: #7AB5E4; }
+.bg-sky-5 { background-color: #559FDB; }
+.bg-sky-6 { background-color: #4D87C2; }
+.bg-sky-7 { background-color: #3A6DA0; }
+
+/* FERN – vibrant foliage */
+.bg-fern-1 { background-color: #E1F3DF; }
+.bg-fern-2 { background-color: #C3E8C0; }
+.bg-fern-3 { background-color: #A4DCA1; }
+.bg-fern-4 { background-color: #83CF81; }
+.bg-fern-5 { background-color: #67BA69; }
+.bg-fern-6 { background-color: #4A8C4D; }
+.bg-fern-7 { background-color: #38693B; }
+
+/* PLUM – reflective purple */
+.bg-plum-1 { background-color: #EED8E9; }
+.bg-plum-2 { background-color: #DABFD9; }
+.bg-plum-3 { background-color: #C5A4C8; }
+.bg-plum-4 { background-color: #AD86B3; }
+.bg-plum-5 { background-color: #98679F; }
+.bg-plum-6 { background-color: #874C78; }
+.bg-plum-7 { background-color: #6D3C62; }
+
+/* This is your light theme, and since it's at the top level of :root, 
+it's applied by default. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --font-sans: var(--font-geist-sans, Arial, Helvetica, sans-serif);
-  --font-mono: var(--font-geist-mono, monospace);
+  --background: var(--color-canvas, #F7F3E8);
+  --foreground1: var(--color-foreground1, #E9DFC8);
+  --foreground2: var(--color-foreground2, #DFD5BA);
+  --foreground3: var(--color-foreground3, #CBB89D);
+  --foreground4: var(--color-foreground4, #ECD7A4);
+  --font-sans: var(--font-geist-sans, 'Geist Sans', 'Helvetica', 'Arial', sans-serif);
+  --font-mono: var(--font-geist-mono, 'Geist Mono', monospace);
+  --font-serif: var(--font-garamond-serif, 'Cormorant Garamond', 'Georgia', serif);
+  --text-primary: var(--color-text-primary, #2E3C2F);
+  --text-accent: var(--color-text-accent, #C46D5E);
+  /* use like this later:
+  <div style={{ color: 'var(--text-accent)' }}> */
 }
 
-@media (prefers-color-scheme: dark) {
+/* This overrides the colors only if the user's system prefers dark mode. 
+You're not defaulting to dark—you're responding to user settings. */
+/* work on this later */
+/* @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
   }
-}
+} */
 
 body {
   background: var(--background);
-  color: var(--foreground);
+  color: var(--text-primary);
   font-family: var(--font-sans);
 }
