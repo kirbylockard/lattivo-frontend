@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { ThemeToggle } from "../components/themeToggle";
+import AddHabitForm from '../components/addHabitForm';
 
 export default function Home() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [addHabitFormOpen, setAddHabitFormOpen] = useState(false);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -45,11 +47,26 @@ export default function Home() {
       {/* Habit Grid Demo */}
       <section className="grid grid-cols-3 gap-4 mt-8 max-w-2xl mx-auto">
         {['hibiscus', 'fern', 'plum', 'sky', 'ochre', 'terracotta'].map((color) => (
-          <div key={color} className={`p-4 rounded-lg text-center bg-${color}-6 text-light`}>
+          <div key={color} className={`p-4 rounded-lg text-center bg-${color}-7 text-light`}>
             {`${color.charAt(0).toUpperCase() + color.slice(1)} Streak`}
           </div>
         ))}
       </section>
+
+            
+        <button className="max-w-md mx-auto rounded-lg bg-sky-3 text-light px-6 py-4 hover:bg-sky-6 transition-colors" onClick={()=>setAddHabitFormOpen(!addHabitFormOpen)}>
+          Add New Habit
+        </button>
+
+{addHabitFormOpen && (
+        <AddHabitForm
+          onClose={() => setAddHabitFormOpen(false) }
+          onSave={(habit) => {
+            console.log('New Habit:', habit);
+            setAddHabitFormOpen(false);
+          }}
+          />
+)}
        
     </main>
   );
