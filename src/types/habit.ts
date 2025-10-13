@@ -1,31 +1,26 @@
+import { HabitUnit } from "./units";
+import { HabitSchedule } from "./scheduling";
 
-export enum GoalType {
-    Comlpletion = 'completion', 
-    Quantity = 'quantity', 
-    Duration = 'duration', 
-    CheckIn = 'check-in',
-}
-
-export type Scheduletype = 'daily' | 'weekly' | 'custom'
-
-export type Unit = 'minutes' | 'reps' | 'glasses' | null
-
-export type Frequency = {
-    scheduleType: Scheduletype
-    daysOfWeek?: number[]  // 0 (Sun) to 6 (Sat)
-    interval?: number      // e.g., every 2 days
-    timesPerWeek?: number  // goal e.g., 3x/week
-}
 
 export type Habit = {
-    id: string;
-    name: string
-    creationDate: Date
-    endDate?: Date | null
-    goalType: GoalType
-    targetValue?: number | null     //applies to quantity or duration types
-    unit: Unit
-    frequency: Frequency
-    icon: string
-    isArchived: boolean
-}
+  id: string;
+  name: string;
+  creationDate: Date;
+  endDate?: Date | null;
+  isActive: boolean;
+  unit: HabitUnit;
+  targetValue: number;
+  schedule: HabitSchedule;
+  notes?: string;
+  color?: string;
+  streakCount: number;
+  longestStreak: number;
+  lastCompletionDate?: Date | null;
+  nextDueDate?: Date | null;
+  isArchived: boolean;
+  tags?: string[];
+};
+
+//omit id and date on creation to be created server-side
+export type HabitCreate = Omit<Habit, 'id' | 'creationDate'>;
+export type HabitUpdate = Partial<HabitCreate>;
