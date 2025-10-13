@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { ThemeToggle } from "../components/themeToggle";
-import AddHabitForm from '../components/addHabitForm';
+
+import Link from 'next/link';
 
 export default function Home() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  const [addHabitFormOpen, setAddHabitFormOpen] = useState(false);
+  
 
   useEffect(() => {
     const root = document.documentElement;
@@ -25,48 +26,23 @@ export default function Home() {
       <ThemeToggle theme={theme} setTheme={setTheme} />
 
       {/* Title Section */}
-      <section className="text-center text-primary">
-        <h1 className="text-4xl font-serif tracking-tight">
+      <section className="text-center">
+        <h1 className="text-4xl font-serif tracking-tight text-primary">
           Welcome to Lattivo 🌱
         </h1>
-        <p className="text-lg mt-2">
+        <p className="text-lg mt-2 text-primary">
           Your personal performance dashboard for habit tracking, time management, and growth.
         </p>
       </section>
 
-      {/* Highlight Section */}
-      <section className="max-w-md mx-auto rounded-lg p-6 shadow-md text-dark bg-foreground1">
-        <h2 className="text-xl font-semibold mb-3">Today's Focus</h2>
-        <ul className="list-disc pl-5 space-y-1">
-          <li>🌿 Complete your morning routine</li>
-          <li>📊 Log your working hours</li>
-          <li>🧠 Review habit streak progress</li>
-        </ul>
-      </section>
-
-      {/* Habit Grid Demo */}
-      <section className="grid grid-cols-3 gap-4 mt-8 max-w-2xl mx-auto">
-        {['hibiscus', 'fern', 'plum', 'sky', 'ochre', 'terracotta'].map((color) => (
-          <div key={color} className={`p-4 rounded-lg text-center bg-${color}-7 text-light`}>
-            {`${color.charAt(0).toUpperCase() + color.slice(1)} Streak`}
-          </div>
-        ))}
-      </section>
-
             
-        <button className="max-w-md mx-auto rounded-lg bg-sky-3 text-light px-6 py-4 hover:bg-sky-6 transition-colors" onClick={()=>setAddHabitFormOpen(!addHabitFormOpen)}>
-          Add New Habit
-        </button>
+        <Link
+  href="/habitDashboard"
+  className="max-w-md mx-auto block rounded-lg bg-sky-3 text-light px-6 py-4 text-center hover:bg-sky-6 transition-colors"
+>
+  Go to Habit Dashboard
+</Link>
 
-{addHabitFormOpen && (
-        <AddHabitForm
-          onClose={() => setAddHabitFormOpen(false) }
-          onSave={(habit) => {
-            console.log('New Habit:', habit);
-            setAddHabitFormOpen(false);
-          }}
-          />
-)}
        
     </main>
   );
