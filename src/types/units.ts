@@ -46,7 +46,7 @@ export const defaultUnits: UnitDefinition[] = [
   // Reading / Count-based
   { key: 'pages', label: 'Pages', category: UnitCategory.Reading, allowsDecimal: false },
   { key: 'books', label: 'Books', category: UnitCategory.Reading, allowsDecimal: false },
-  { key: 'lessons', label: 'Lessons', category: UnitCategory.Count, allowsDecimal: false },
+  { key: 'count', label: 'Count', category: UnitCategory.Count, allowsDecimal: false },
   { key: 'reps', label: 'Reps', category: UnitCategory.Exercise, allowsDecimal: false },
   { key: 'sets', label: 'Sets', category: UnitCategory.Exercise, allowsDecimal: false },
   { key: 'steps', label: 'Steps', category: UnitCategory.Exercise, allowsDecimal: false },
