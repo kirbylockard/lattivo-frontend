@@ -24,8 +24,8 @@ export type RollingSchedule = {
 // Flexible window (X completions per window, e.g., 3x per week)
 export type FlexibleWindowSchedule = {
   type: 'flexible-window';
-  occurrencesPerWindow: number;
-  intervalDays: number; 
+  windowLength: number;
+  intervalType: IntervalType; 
   resetOnMiss: boolean; // if true, missing the target resets the schedule
 };
 

@@ -37,7 +37,7 @@ export default function Home() {
 
             
         <Link
-  href="/habitDashboard"
+  href="/habits"
   className="max-w-md mx-auto block rounded-lg bg-sky-3 text-light px-6 py-4 text-center hover:bg-sky-6 transition-colors"
 >
   Go to Habit Dashboard

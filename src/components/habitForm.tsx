@@ -13,15 +13,38 @@ import {
   defaultUnits,
   HabitUnit,
 } from '@/types/units';
+import { getNumberSuffix } from '@/lib/dateUtils';
 import {
   ScheduleType,
   IntervalType,
   HabitSchedule,
+  RollingSchedule,
 } from '@/types/scheduling';
 
 /* -------------------------------------------------------------------------- */
 /* 🧩 Zod Schema                                                              */
 /* -------------------------------------------------------------------------- */
+
+const customScheduleSchema = z.object({
+  type: z.enum(['specific-days', 'rolling', 'flexible-window']),
+}).and(z.union([
+  z.object({
+    type: z.literal('specific-days'),
+    daysOfWeek: z.array(z.number().min(0).max(6)).min(1, "Select at least one day"),
+  }),
+  z.object({
+    type: z.literal('rolling'),
+    intervalType: z.enum(['day', 'week', 'month']),
+    intervalQuantity: z.number().min(1, "Interval quantity must be at least 1"),
+    resetOnMiss: z.boolean(),
+  }),
+  z.object({
+    type: z.literal('flexible-window'),
+    windowLength: z.number().min(1, "Occurrences must be at least 1"),
+    intervalType: z.enum(['day', 'week', 'month']),
+    resetOnMiss: z.boolean(),
+  }),
+]));
 
 const habitSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -35,7 +58,7 @@ const habitSchema = z.object({
     category: z.string().optional(),
   }),
   targetValue: z.number().min(1, "Target value must be positive"),
-  schedule: z.any(),
+  schedule: customScheduleSchema,
   tags: z.array(z.string()).optional(),
 });
 
@@ -160,9 +183,10 @@ const onSubmit = (data: HabitFormData) => {
       <h2 className="text-xl font-semibold text-dark">Habit Details</h2>
 
       <div>
+        <label htmlFor='name' className="block text-dark mb-1">Name</label>
         <input
           type="text"
-          placeholder="Habit Name"
+          placeholder="Meditate"
           {...register('name')}
           className="w-full p-2 border rounded bg-foreground1 text-dark"
         />
@@ -170,8 +194,9 @@ const onSubmit = (data: HabitFormData) => {
       </div>
 
       <div>
+        <label htmlFor='notes' className="block text-dark mb-1">Notes</label>
         <textarea
-          placeholder="Notes (optional)"
+          placeholder="Practice mindfulness with no destractions"
           {...register('notes')}
           className="w-full p-2 border rounded bg-foreground1 text-dark resize-none"
           rows={3}
@@ -179,9 +204,10 @@ const onSubmit = (data: HabitFormData) => {
       </div>
 
       <div>
+        <label htmlFor='tags' className="block text-dark mb-1">Tags</label>
         <input
           type="text"
-          placeholder="Tags (comma separated)"
+          placeholder="Health, Wellness"
           onChange={(e) =>
             setValue(
               'tags',
@@ -197,49 +223,63 @@ const onSubmit = (data: HabitFormData) => {
       </div>
     </div>
   );
+  
 
-  const renderStructureStep = () => (
+  const renderStructureStep = () => {
+    const watchedRollingQuantity = watch('schedule.intervalQuantity');
+  const watchedRollingType = watch('schedule.intervalType');
+  const watchFlexibleQuantity = watch('schedule.windowLength');
+  const watchFlexibleType = watch('schedule.intervalType');
+
+    return (
+  
     <div className="space-y-4">
       <h2 className="text-xl font-semibold text-dark">Structure</h2>
 
-      {/* Unit Category */}
-      <select
-        value={selectedCategory}
-        onChange={(e) =>
-          setSelectedCategory(e.target.value as UnitCategory | '')
-        }
-        className="w-full p-2 border rounded bg-foreground1 text-dark"
-      >
-        <option value="">Select Unit Category</option>
-        {Object.values(UnitCategory).map((cat) => (
-          <option key={cat} value={cat}>
-            {cat.charAt(0).toUpperCase() + cat.slice(1)}
-          </option>
-        ))}
-      </select>
+      {/* Units */}
+      <div>
+  <label className="block text-dark mb-1">Unit of Measure</label>
+  <select
+    id="unit"
+    defaultValue={""}
+    {...register('unit.unitKey', { required: true })}
+    required
+    
+    className="w-full p-2 border rounded bg-foreground1 text-dark"
+  >
+    {/* ✅ Placeholder Option (light gray text only for itself) */}
+    <option value=""  disabled hidden className="text-gray-400">
+      Select unit of measure
+    </option>
 
-      {/* Units by Category */}
-      {selectedCategory && (
-        <select
-          {...register('unit.unitKey')}
-          className="w-full p-2 border rounded bg-foreground1 text-dark"
-        >
-          <option value="">Select Unit</option>
-          {defaultUnits
-            .filter((u) => u.category === selectedCategory)
-            .map((u) => (
-              <option key={u.key} value={u.key}>
-                {u.label}
-              </option>
-            ))}
-        </select>
-      )}
+    {Object.values(UnitCategory).map((category) => (
+      <optgroup
+        key={category}
+        label={category.charAt(0).toUpperCase() + category.slice(1)}
+      >
+        {defaultUnits
+          .filter((u) => u.category === category)
+          .map((u) => (
+            <option key={u.key} value={u.key}>
+              {u.label}
+            </option>
+          ))}
+      </optgroup>
+    ))}
+  </select>
+
+  {errors.unit?.unitKey && (
+    <p className="text-error text-sm mt-1">
+      {errors.unit.unitKey.message}
+    </p>
+  )}
+</div>
 
       {/* Target Value */}
       <div>
+        <label htmlFor='targetValue' className="block text-dark mb-1">Target Value</label>
         <input
           type="number"
-          placeholder="Target Value"
           {...register('targetValue', { valueAsNumber: true })}
           className="w-full p-2 border rounded bg-foreground1 text-dark"
         />
@@ -249,14 +289,20 @@ const onSubmit = (data: HabitFormData) => {
       </div>
 
       {/* Schedule Type */}
+      <div>
+        <label className="block text-dark mb-1">Schedule Type</label>
       <select
         {...register('schedule.type')}
         className="w-full p-2 border rounded bg-foreground1 text-dark"
       >
+        <option value="" disabled hidden className="text-gray-400">
+          Select schedule type
+        </option>
         <option value="rolling">Rolling</option>
         <option value="specific-days">Specific Days</option>
         <option value="flexible-window">Flexible Window</option>
       </select>
+      </div>
 
       {/* Schedule Details */}
       {selectedSchedule === 'specific-days' && (
@@ -285,6 +331,9 @@ const onSubmit = (data: HabitFormData) => {
 
       {selectedSchedule === 'rolling' && (
         <>
+        <div className="space-y-2 justify-between direction-row flex">
+        <div className='flex-1 pr-2'>
+        <label className="block text-dark mb-1">Interval Type</label>
           <select
             {...register('schedule.intervalType')}
             className="w-full p-2 border rounded bg-foreground1 text-dark"
@@ -293,34 +342,59 @@ const onSubmit = (data: HabitFormData) => {
             <option value="week">Week</option>
             <option value="month">Month</option>
           </select>
-
+          </div>
+          <div className='flex-1 pl-2'>
+          <label className="block text-dark mb-1">Interval Quantity</label>
           <input
             type="number"
             placeholder="Interval Quantity"
             {...register('schedule.intervalQuantity', { valueAsNumber: true })}
             className="w-full p-2 border rounded bg-foreground1 text-dark"
           />
+          </div>
+          
+          </div>
+          <div className="text-dark mt-2">
+      Complete habit every {watchedRollingQuantity === 1 ? '': watchedRollingQuantity + getNumberSuffix(watchedRollingQuantity) + ' '} {watchedRollingType || 'day'}
+      
+    </div>
         </>
       )}
 
       {selectedSchedule === 'flexible-window' && (
         <>
+        <div className="space-y-2 justify-between direction-row flex">
+          <div className='flex-1 pr-2'>
+          <label className="block text-dark mb-1">Window Type</label>
+          <select
+            {...register('schedule.intervalType')}
+            className="w-full p-2 border rounded bg-foreground1 text-dark"
+          >
+            <option value="day">Day</option>
+            <option value="week">Week</option>
+            <option value="month">Month</option>
+          </select>
+          </div>
+          <div className='flex-1 pl-2'>
+            <label className="block text-dark mb-1">Window Length</label>
           <input
             type="number"
-            placeholder="Occurrences per Window"
-            {...register('schedule.occurrencesPerWindow', { valueAsNumber: true })}
-            className="w-full p-2 border rounded bg-foreground1 text-dark"
+            defaultValue={1}
+            {...register('schedule.windowLength', { valueAsNumber: true })}
+            className="flex-1 p-2 border rounded bg-foreground1 text-dark"
           />
-          <input
-            type="number"
-            placeholder="Interval Days"
-            {...register('schedule.intervalDays', { valueAsNumber: true })}
-            className="w-full p-2 border rounded bg-foreground1 text-dark"
-          />
+          </div>
+          </div>
+          <div className="text-dark mt-2">
+      Complete habit within {watchFlexibleQuantity || 1} {' '}
+       {watchFlexibleType || 'day'}
+      {watchFlexibleQuantity > 1 ? 's' : ''}
+    </div>
         </>
       )}
     </div>
   );
+}
 
   const renderReviewStep = () => {
     const values = methods.getValues();
