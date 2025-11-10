@@ -2,10 +2,12 @@
 import { useState } from "react";
 import HabitForm from "@/components/habitForm";
 import { useHabitsStore } from "@/context/useHabitsStore"; // ✅ import store
+import HabitCard from "@/components/habitCard";
 
 export default function HabitDashboard() {
-  const { addHabit } = useHabitsStore();  // ✅ get from context
+  const { addHabit } = useHabitsStore(); // ✅ get from context
   const [addHabitFormOpen, setAddHabitFormOpen] = useState(false);
+  const { habits, deleteHabit } = useHabitsStore();
 
   return (
     <main className="min-h-screen px-6 py-10 bg-background text-primary">
@@ -18,6 +20,17 @@ export default function HabitDashboard() {
       >
         Add New Habit
       </button>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {habits.map((h) => (
+          <HabitCard
+            key={h.id}
+            habit={h}
+            //onEdit={(habit) => editHabit(habit.id, habit)}
+            onDelete={(id) => deleteHabit(id)}
+            //onComplete={(id) => completeHabit(id)}
+          />
+        ))}
+      </div>
 
       {addHabitFormOpen && (
         <HabitForm
