@@ -284,10 +284,7 @@ export default function HabitForm({
       </div>
 
       <div>
-        <label
-          htmlFor="tags"
-          className="block text-dark mb-1 flex items-center"
-        >
+        <label htmlFor="tags" className="text-dark mb-1 flex items-center">
           Tags
         </label>
 
