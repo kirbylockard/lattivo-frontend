@@ -6,7 +6,12 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { HabitCreate, Habit } from "@/types/habit";
 import { UnitCategory, defaultUnits } from "@/types/units";
-import { getNumberSuffix } from "@/lib/dateUtils";
+import {
+  rollingSentence,
+  flexibleSentence,
+  specificDaysSentence,
+  scheduleToSentence,
+} from "@/lib/dateUtils";
 
 /* -------------------------------------------------------------------------- */
 /* 🧩 Zod Schemas                                                             */
@@ -88,74 +93,6 @@ const colorOptions = [
   { name: "Fern", class: "bg-fern-7", value: "#4A8C4D" },
   { name: "Plum", class: "bg-plum-7", value: "#874C78" },
 ];
-
-/* -------------------------------------------------------------------------- */
-/* 🧠 Schedule → Human sentence helpers                                       */
-/* -------------------------------------------------------------------------- */
-
-const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
-
-function oxfordList(items: string[]) {
-  if (items.length <= 1) return items.join("");
-  if (items.length === 2) return `${items[0]} and ${items[1]}`;
-  return `${items.slice(0, -1).join(", ")}, and ${items[items.length - 1]}`;
-}
-
-function rollingSentence(
-  qty: number | undefined,
-  unit: "day" | "week" | "month" | undefined
-) {
-  const n = qty && qty > 0 ? qty : 1;
-  const u = (unit ?? "day") as "day" | "week" | "month";
-  // singular for this phrasing; ordinal only if > 1
-  return n === 1
-    ? `Complete habit every ${u}`
-    : `Complete habit every ${n}${getNumberSuffix(n)} ${u}`;
-}
-
-function flexibleSentence(
-  len: number | undefined,
-  unit: "day" | "week" | "month" | undefined
-) {
-  const n = len && len > 0 ? len : 1;
-  const u = (unit ?? "day") as "day" | "week" | "month";
-  return `Complete habit within ${n} ${u}${n > 1 ? "s" : ""}`;
-}
-
-function specificDaysSentence(days: number[]) {
-  const labels = days
-    .slice()
-    .sort((a, b) => a - b)
-    .map((i) => DAY_LABELS[i] ?? "");
-  return labels.length
-    ? `Complete habit every ${oxfordList(labels)}`
-    : "Complete habit on selected days";
-}
-
-// Given the current schedule object, build the sentence + reset string (or null)
-function scheduleSummary(schedule: HabitFormData["schedule"]) {
-  if (schedule.type === "rolling") {
-    return {
-      sentence: rollingSentence(schedule.intervalQuantity, schedule.intervalType),
-      reset: `Resets on miss: ${schedule.resetOnMiss ? "Yes" : "No"}`,
-    };
-  }
-  if (schedule.type === "flexible-window") {
-    return {
-      sentence: flexibleSentence(schedule.windowLength, schedule.intervalType),
-      reset: `Resets on miss: ${schedule.resetOnMiss ? "Yes" : "No"}`,
-    };
-  }
-  // specific-days
-  return {
-    sentence: specificDaysSentence(schedule.daysOfWeek ?? []),
-    reset: null,
-  };
-}
-
-/* -------------------------------------------------------------------------- */
-/* 🌱 Component                                                                */
-/* -------------------------------------------------------------------------- */
 
 export default function HabitForm({
   mode,
@@ -300,12 +237,9 @@ export default function HabitForm({
         // cast the string category to your enum on the way out
         category: data.unit.category as UnitCategory | undefined,
       },
+      userId: "current-user", // temp until auth is up
       isActive: true,
       endDate: null,
-      streakCount: 0,
-      longestStreak: 0,
-      lastCompletionDate: null,
-      nextDueDate: null,
       isArchived: false,
     };
 
@@ -383,20 +317,31 @@ export default function HabitForm({
 
   const renderStructureStep = () => {
     const watchedRollingQuantity = watch("schedule.intervalQuantity");
-    const watchedRollingType = watch("schedule.intervalType");
+    const watchedRollingType = watch("schedule.intervalType") as
+      | "day"
+      | "week"
+      | "month"
+      | undefined;
+
     const watchFlexibleLength = watch("schedule.windowLength");
-    const watchFlexibleType = watch("schedule.intervalType");
+    const watchFlexibleType = watch("schedule.intervalType") as
+      | "day"
+      | "week"
+      | "month"
+      | undefined;
+
     const schedule = watch("schedule");
 
-    // Precompute sentence for each schedule type so UI stays consistent
     const rollingLine =
       schedule?.type === "rolling"
-        ? rollingSentence(watchedRollingQuantity, watchedRollingType as any)
+        ? rollingSentence(watchedRollingQuantity, watchedRollingType)
         : "";
+
     const flexibleLine =
       schedule?.type === "flexible-window"
-        ? flexibleSentence(watchFlexibleLength, watchFlexibleType as any)
+        ? flexibleSentence(watchFlexibleLength, watchFlexibleType)
         : "";
+
     const specificDaysLine =
       schedule?.type === "specific-days"
         ? specificDaysSentence(daysOfWeek)
@@ -635,7 +580,9 @@ export default function HabitForm({
   const renderReviewStep = () => {
     const selectedColor = watch("color");
     const values = methods.getValues();
-    const { sentence, reset } = scheduleSummary(values.schedule);
+    const { line: sentence, reset } = scheduleToSentence(
+      values.schedule as any
+    );
 
     const hasTags = Array.isArray(values.tags) && values.tags.length > 0;
     const hasNotes = !!values.notes?.trim();
@@ -690,7 +637,8 @@ export default function HabitForm({
           </p>
           {reset && (
             <p>
-              <strong>Reset on miss:</strong> {reset.replace("Resets on miss: ", "")}
+              <strong>Reset on miss:</strong>{" "}
+              {reset.replace("Resets on miss: ", "")}
             </p>
           )}
           {hasTags && (
