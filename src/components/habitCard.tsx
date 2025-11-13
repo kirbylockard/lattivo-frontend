@@ -34,7 +34,7 @@ export default function HabitCard({
     >
       {/* Header */}
       <header className="flex items-center justify-between px-4 py-3 bg-foreground3/40">
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-3 min-w-0 pr-4">
           {/* Color swatch (falls back to theme if missing) */}
           <span
             className="inline-block w-4 h-4 rounded-full ring-2 ring-woodland/20 shrink-0"

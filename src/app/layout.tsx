@@ -3,9 +3,14 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "../styles/globals.css";
 import { HabitsProvider } from "@/context/useHabitsStore";
-import Header from "@/components/header";
+import { ThemeProvider } from "@/context/themeProvider";
+import { Header } from "@/components/header";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
@@ -23,12 +28,19 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[var(--color-background)] text-[var(--color-primary)] transition-colors duration-300`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[var(--color-background)] text-[var(--color-primary)] min-h-screen`}
       >
-        <HabitsProvider>
-          <Header />
-          <main>{children}</main>
-        </HabitsProvider>
+        <ThemeProvider>
+          <HabitsProvider>
+            <div className="min-h-screen flex flex-col">
+              <Header />
+              {/* 👇 Add w-full so main always occupies max width */}
+              <main className="w-full max-w-6xl mx-auto px-4 py-6">
+                {children}
+              </main>
+            </div>
+          </HabitsProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
