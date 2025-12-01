@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { HabitCreate, Habit } from "@/types/habit";
+import { HabitCreate, Habit, HabitUpdate } from "@/types/habit";
 import { UnitCategory, defaultUnits } from "@/types/units";
 import {
   rollingSentence,
@@ -17,7 +17,6 @@ import {
 /* 🧩 Zod Schemas                                                             */
 /* -------------------------------------------------------------------------- */
 
-// Strict schedule schema to match your discriminated union
 const customScheduleSchema = z
   .object({
     type: z.enum(["specific-days", "rolling", "flexible-window"]),
@@ -53,14 +52,17 @@ const habitSchema = z.object({
   name: z.string().min(1, "Name is required"),
   notes: z.string().optional(),
   color: z.string().optional(),
-  unit: z.object({
-    unitKey: z.string().min(1, "Please select a unit of measure"),
-    isCustom: z.boolean(),
-    customLabel: z.string().optional(),
-    allowsDecimal: z.boolean().optional(),
-    // keep string here; cast to UnitCategory on submit
-    category: z.string().optional(),
-  }),
+
+  // 🔁 Flattened unit fields (no nested object in schema)
+  unitKey: z.string().min(1, "Please select a unit of measure"),
+  unitIsCustom: z.boolean().optional(),
+
+  // ✅ Accept null from API / DB in edit mode
+  unitCustomLabel: z.string().nullable().optional(),
+
+  unitAllowsDecimal: z.boolean().optional(),
+  unitCategory: z.string().optional(),
+
   targetValue: z
     .number({ error: "Enter a number" })
     .min(1, "Target value must be positive"),
@@ -77,7 +79,8 @@ type HabitFormData = z.infer<typeof habitSchema>;
 type HabitFormProps = {
   mode: "create" | "edit";
   initialData?: Habit;
-  onSave: (habit: HabitCreate) => void;
+  userId: string;
+  onSave: (payload: HabitCreate | HabitUpdate) => void;
   onCancel: () => void;
 };
 
@@ -97,66 +100,46 @@ const colorOptions = [
 export default function HabitForm({
   mode,
   initialData,
+  userId,
   onSave,
   onCancel,
 }: HabitFormProps) {
-  const [step, setStep] = useState(mode === "edit" ? 3 : 1);
-  const [daysOfWeek, setDaysOfWeek] = useState<number[]>(
-    (initialData?.schedule.type === "specific-days"
-      ? initialData.schedule.daysOfWeek
-      : []) || []
-  );
+  const [step, setStep] = useState(1);
+
+  const initialSpecificDays =
+    initialData?.schedule.type === "specific-days"
+      ? (initialData.schedule.daysOfWeek as number[])
+      : [];
+
+  const [daysOfWeek, setDaysOfWeek] = useState<number[]>(initialSpecificDays);
 
   const methods = useForm<HabitFormData>({
     resolver: zodResolver(habitSchema),
+    shouldUnregister: false,
     defaultValues: initialData
       ? {
-          // map initial habit to form data if you pass it in
           name: initialData.name,
           notes: initialData.notes ?? "",
           color: initialData.color ?? colorOptions[0].value,
-          unit: {
-            unitKey: initialData.unit.unitKey,
-            isCustom: initialData.unit.isCustom,
-            customLabel: initialData.unit.customLabel,
-            allowsDecimal: initialData.unit.allowsDecimal,
-            category: initialData.unit.category,
-          },
+
+          // 🔁 Flattened unit defaults from Habit.unit
+          unitKey: initialData.unit.unitKey,
+          unitIsCustom: initialData.unit.isCustom,
+          unitCustomLabel: initialData.unit.customLabel ?? undefined,
+          unitAllowsDecimal: initialData.unit.allowsDecimal,
+          unitCategory: initialData.unit.category,
+
           targetValue: initialData.targetValue,
-          schedule:
-            initialData.schedule.type === "specific-days"
-              ? {
-                  type: "specific-days",
-                  daysOfWeek:
-                    (initialData.schedule.daysOfWeek as number[]) ?? [],
-                }
-              : initialData.schedule.type === "rolling"
-              ? {
-                  type: "rolling",
-                  intervalType: initialData.schedule.intervalType,
-                  intervalQuantity: initialData.schedule.intervalQuantity,
-                  resetOnMiss:
-                    (initialData.schedule as any).resetOnMiss ?? false,
-                }
-              : {
-                  type: "flexible-window",
-                  windowLength: (initialData.schedule as any).intervalDays ?? 2, // fallback if older shape
-                  intervalType:
-                    (initialData.schedule as any).intervalType ?? "week",
-                  resetOnMiss:
-                    (initialData.schedule as any).resetOnMiss ?? false,
-                },
+          schedule: initialData.schedule as any,
           tags: initialData.tags ?? [],
         }
       : {
           name: "",
           notes: "",
           tags: [],
-          unit: {
-            unitKey: "",
-            isCustom: false,
-            category: undefined,
-          },
+          unitKey: "",
+          unitIsCustom: false,
+          unitCategory: undefined,
           targetValue: 1,
           schedule: {
             type: "rolling",
@@ -186,6 +169,7 @@ export default function HabitForm({
     const updated = daysOfWeek.includes(day)
       ? daysOfWeek.filter((d) => d !== day)
       : [...daysOfWeek, day];
+
     setDaysOfWeek(updated);
     setValue(
       "schedule",
@@ -230,20 +214,41 @@ export default function HabitForm({
   };
 
   const onSubmit = (data: HabitFormData) => {
-    const newHabit: HabitCreate = {
-      ...data,
-      unit: {
-        ...data.unit,
-        // cast the string category to your enum on the way out
-        category: data.unit.category as UnitCategory | undefined,
-      },
-      userId: "current-user", // temp until auth is up
-      isActive: true,
-      endDate: null,
-      isArchived: false,
+    // 🔁 Rebuild the nested `unit` object from flattened fields
+    const unit = {
+      unitKey: data.unitKey,
+      isCustom: data.unitIsCustom ?? false,
+      // ✅ Normalize null to undefined
+      customLabel: data.unitCustomLabel ?? undefined,
+      allowsDecimal: data.unitAllowsDecimal,
+      category: data.unitCategory as UnitCategory | undefined,
     };
 
-    onSave(newHabit);
+    const base = {
+      name: data.name,
+      notes: data.notes,
+      color: data.color,
+      unit,
+      targetValue: data.targetValue,
+      schedule: data.schedule,
+      tags: data.tags && data.tags.length ? data.tags : undefined,
+    };
+
+    if (mode === "create") {
+      const newHabit: HabitCreate = {
+        ...base,
+        userId,
+        isActive: true,
+        endDate: null,
+        isArchived: false,
+      };
+      onSave(newHabit);
+    } else {
+      const update: HabitUpdate = {
+        ...base,
+      };
+      onSave(update);
+    }
   };
 
   /* ------------------------------------------------------------------------ */
@@ -355,20 +360,16 @@ export default function HabitForm({
           </label>
           <select
             id="unit"
-            defaultValue=""
-            {...register("unit.unitKey", {
+            {...register("unitKey", {
               required: true,
               onChange: (e) => {
                 const unitKey = e.target.value;
                 const def = defaultUnits.find((u) => u.key === unitKey);
-                // Hydrate the rest of the unit metadata
-                setValue("unit.isCustom", false, { shouldDirty: true });
-                setValue(
-                  "unit.allowsDecimal",
-                  def?.allowsDecimal ?? undefined,
-                  { shouldDirty: true }
-                );
-                setValue("unit.category", def?.category ?? undefined, {
+                setValue("unitIsCustom", false, { shouldDirty: true });
+                setValue("unitAllowsDecimal", def?.allowsDecimal ?? undefined, {
+                  shouldDirty: true,
+                });
+                setValue("unitCategory", def?.category ?? undefined, {
                   shouldDirty: true,
                 });
               },
@@ -394,10 +395,8 @@ export default function HabitForm({
               </optgroup>
             ))}
           </select>
-          {errors.unit?.unitKey && (
-            <p className="text-error text-sm mt-1">
-              {errors.unit.unitKey.message}
-            </p>
+          {errors.unitKey && (
+            <p className="text-error text-sm mt-1">{errors.unitKey.message}</p>
           )}
         </div>
 
@@ -412,9 +411,6 @@ export default function HabitForm({
             {...register("targetValue", { valueAsNumber: true })}
             className="w-full p-2 border rounded bg-foreground1 text-dark"
           />
-          {errors.targetValue && (
-            <p className="text-error text-sm">{errors.targetValue.message}</p>
-          )}
         </div>
 
         {/* Schedule type */}
@@ -461,7 +457,6 @@ export default function HabitForm({
               )}
             </div>
 
-            {/* Specific-days summary */}
             <div className="text-dark mt-2">{specificDaysLine}</div>
           </div>
         )}
@@ -512,7 +507,6 @@ export default function HabitForm({
               </span>
             </label>
 
-            {/* Rolling summary (uses helper) */}
             <div className="text-dark mt-2">{rollingLine}</div>
           </>
         )}
@@ -562,7 +556,6 @@ export default function HabitForm({
               </span>
             </label>
 
-            {/* Flexible summary (uses helper) */}
             <div className="text-dark mt-2">{flexibleLine}</div>
           </>
         )}
@@ -627,7 +620,7 @@ export default function HabitForm({
             <strong>Name:</strong> {values.name}
           </p>
           <p>
-            <strong>Target:</strong> {values.targetValue} {values.unit?.unitKey}
+            <strong>Target:</strong> {values.targetValue} {values.unitKey}
           </p>
           <p>
             <strong>Schedule:</strong> {sentence}
@@ -661,7 +654,10 @@ export default function HabitForm({
   return (
     <FormProvider {...methods}>
       <form
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={handleSubmit(onSubmit, (errs) => {
+          // just in case something still fails validation
+          console.warn("Habit form validation errors", errs);
+        })}
         className="fixed inset-0 z-50 flex items-center justify-center"
       >
         <div

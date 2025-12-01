@@ -89,9 +89,9 @@ export default function HabitCard({
           {resetLine && <div className="text-sm opacity-80">{resetLine}</div>}
         </div>
 
-        {/* Will reincorporate streaks when logging habits is figured out */}
-        {/* Dates */}
-        {/* <div className="grid grid-cols-2 gap-3 text-sm">
+        {/* Future: due/last completion / streaks */}
+        {/* Dates
+        <div className="grid grid-cols-2 gap-3 text-sm">
           <div className="space-y-0.5">
             <div className="opacity-80">Next due</div>
             <div className="font-medium">{formatDate(habit.nextDueDate)}</div>
@@ -102,19 +102,8 @@ export default function HabitCard({
               {formatDate(habit.lastCompletionDate)}
             </div>
           </div>
-        </div> */}
-
-        {/* Streaks */}
-        {/* <div className="grid grid-cols-2 gap-3 text-sm">
-          <div className="space-y-0.5">
-            <div className="opacity-80">Current streak</div>
-            <div className="font-medium">{habit.streakCount ?? 0}</div>
-          </div>
-          <div className="space-y-0.5">
-            <div className="opacity-80">Best streak</div>
-            <div className="font-medium">{habit.longestStreak ?? 0}</div>
-          </div>
-        </div> */}
+        </div>
+        */}
 
         {/* Tags */}
         {!!habit.tags?.length && (
